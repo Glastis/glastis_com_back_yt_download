@@ -13,8 +13,12 @@
 #define OPT_HELP_SHOT                               "-h"
 
 #define ERROR_ARGUMENT_IGNORED                      "Argument ignored. See --help or -h to get usage."
+#define ERROR_BAD_TREAD_AMOUNT                      "Thread number must be more than 0"
 
-#define THREAD_NUMBER                               4
+#define THREAD_DEFAULT_DOWNLOAD                     4u
+#define THREAD_DEFAULT_CONVERT                      4u
+#define THREAD_MIN_DOWNLOAD                         1u
+#define THREAD_MIN_CONVERT                          1u
 
 struct                      s_opt
 {
@@ -22,6 +26,8 @@ struct                      s_opt
     char                    *progress_filepath;
     int                     download;
     int                     convert;
+    unsigned int            thread_amount_download;
+    unsigned int            thread_amount_convert;
 };
 
 typedef struct s_opt        t_opt;

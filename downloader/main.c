@@ -8,6 +8,7 @@
 #include "header/main.h"
 #include "header/get_list_info.h"
 #include "header/utilities.h"
+#include "header/download.h"
 
 static void                 init_opt(t_opt *opt)
 {
@@ -15,6 +16,8 @@ static void                 init_opt(t_opt *opt)
     opt->progress_filepath = NULL;
     opt->download = 0;
     opt->convert = 0;
+    opt->thread_amount_download = THREAD_DEFAULT_DOWNLOAD;
+    opt->thread_amount_convert = THREAD_DEFAULT_CONVERT;
 }
 
 static void                 get_opt(t_opt *opt, char **av)
@@ -54,13 +57,23 @@ static void                 get_opt(t_opt *opt, char **av)
     }
 }
 
+static void                 check_opt(t_opt *opt)
+{
+    if (opt->thread_amount_download < THREAD_MIN_DOWNLOAD || opt->thread_amount_convert < THREAD_MIN_CONVERT)
+    {
+        error(ERROR_BAD_TREAD_AMOUNT);
+    }
+}
+
 int                         main(int ac, char **av)
 {
     t_opt                   opt;
     t_process               process;
 
     get_opt(&opt, av);
+    check_opt(&opt);
     get_process(&opt, &process);
-    puts_all_vid_info(&process);
+//    puts_all_vid_info(&process);
+    download_videos(&process, &opt);
     return (0);
 }
