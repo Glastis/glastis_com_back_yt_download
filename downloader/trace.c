@@ -8,7 +8,8 @@
 #ifdef TRACE_DEBUG
 #include <stdio.h>
 #include <time.h>
-
+#include <signal.h>
+#include <stdlib.h>
 
 static FILE                             *fp_trace;
 
@@ -39,6 +40,30 @@ void                                    __cyg_profile_func_exit (void *func, voi
     {
         fprintf(fp_trace, "x %p %p %lu\n", func, caller, time(NULL));
     }
+}
+
+static void                 signal_handle(int sig)
+{
+    if (fp_trace)
+    {
+        fclose(fp_trace);
+        fp_trace = NULL;
+    }
+    fprintf(stderr, "%s: %d", WARNING_SIGNAL_RECEIVED, sig);
+    exit(EXIT_FAILURE);
+}
+
+void                        debug_init()
+{
+    puts(WARNING_DEBUG_MODE);
+    signal(SIGINT, signal_handle);
+}
+
+#else
+
+void                        debug_init()
+{
+
 }
 
 #endif /* !TRACE_DEBUG */

@@ -10,6 +10,7 @@
 #include "header/get_list_info.h"
 #include "header/utilities.h"
 #include "header/download.h"
+#include "header/trace.h"
 
 static void                 init_opt(t_opt *opt)
 {
@@ -95,6 +96,8 @@ int                         main(int ac, char **av)
     t_process               process;
 
     UNUSED(ac);
+    debug_init();
+    return (0);
     get_opt(&opt, av);
     check_opt(&opt);
     get_process(&opt, &process);
