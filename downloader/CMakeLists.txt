@@ -10,7 +10,7 @@ add_executable(${PROJECT_NAME}
         utilities.c         header/utilities.h
         download.c          header/download.h
 
-        )
+        header/accepted_formats.h trace.c header/trace.h)
 
 target_link_libraries(${PROJECT_NAME} curl)
 target_link_libraries(${PROJECT_NAME} pthread)

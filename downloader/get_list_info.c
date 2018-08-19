@@ -20,11 +20,16 @@ static void                 init_process(t_process *process)
     process->video_amount = 0;
 }
 
-static void                 init_video(t_video *video)
+static t_video              *init_video()
 {
+    t_video                 *video;
+
+    video = safe_malloc(1, sizeof(t_video));
     video->id = NULL;
     video->converted = FALSE;
     video->downloaded = FALSE;
+    video->download_ended = FALSE;
+    return (video);
 }
 
 int                         is_existing_video(t_process *process, char *id)
@@ -150,7 +155,7 @@ int                         add_video(t_process *process, char *id)
     if (title)
     {
         process->video = safe_realloc(process->video, (size_t) (process->video_amount + 1), sizeof(t_video *));
-        vid = safe_malloc(1, sizeof(t_video));
+        vid = init_video();
         vid->id = id;
         vid->title = title;
         process->video[process->video_amount] = vid;
@@ -245,11 +250,6 @@ static void                 get_video_from_file(char *filename, t_process *proce
     buff[buff_size + readed]  = '\0';
     parse_video_list(process, buff);
     free(buff);
-}
-
-void                        get_list_info(t_opt *opt, t_process *process)
-{
-
 }
 
 void                        get_process(t_opt *opt, t_process *process)

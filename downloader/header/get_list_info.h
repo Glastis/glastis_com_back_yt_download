@@ -18,7 +18,6 @@
 #define ERROR_FILE_OPENING                          "Failed to open file"
 
 #include "process.h"
-#include "main.h"
 
 void                        get_process(t_opt *opt, t_process *process);
 int                         add_video(t_process *process, char *id);

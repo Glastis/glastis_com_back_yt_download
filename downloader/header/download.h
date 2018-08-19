@@ -9,6 +9,9 @@
 #include "process.h"
 #include "main.h"
 
+#define THREAD_CONVERTER_WAIT_DELAY                 500u /* Miliseconds to wait available videos to convert. */
+#define THREAD_CONVERTER_MAX_RETRY                  300
+
 enum                        e_role
 {
     DOWNLOADER,
@@ -26,7 +29,7 @@ struct                      s_worker
     pthread_t               id;
     enum e_role             job;
     void                    (*job_process)(struct s_workinfo *);
-    char                    *vid_id;
+    t_video                 *video;
     t_process               *process;
 };
 
