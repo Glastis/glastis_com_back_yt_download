@@ -2,9 +2,12 @@ SRC=			    ./download.c \
 			        ./get_list_info.c \
 			        ./main.c \
 			        ./utilities.c \
-			        ./trace.c \
+
+SRC_NOTRACE=        ./trace.c \
 
 OBJ=			    $(SRC:.c=.o)
+
+OBJ_NOTRACE=	    $(SRC_NOTRACE:.c=.o)
 
 NAME=			    a.out
 
@@ -12,17 +15,25 @@ CFLAGS=		        -Wall -Wextra -Werror -ansi -pedantic
 
 LFLAGS=			    -lpthread -lcurl
 
-all:			$(NAME)
+CC=                 gcc
 
-debug: fclean
-debug: CFLAGS +=    -finstrument-functions -g3 -DTRACE_DEBUG
+TRACEFLAG=          -DDIRTY_WAY_WITH_UNREDONDANT_NAME
+
+all: comp_trace $(NAME)
+
+comp_trace:
+	$(CC) -c $(SRC_NOTRACE) $(TRACEFLAG)
+
+debug: TRACEFLAG +=-DTRACE_DEBUG
+debug: fclean comp_trace
+debug: CFLAGS += -finstrument-functions -g3 -DTRACE_DEBUG
 debug: $(NAME)
 
 $(NAME):		$(OBJ)
-	gcc $(CFLAGS) -o $(NAME) $(OBJ) $(LFLAGS)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(OBJ_NOTRACE) $(LFLAGS)
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(OBJ_NOTRACE)
 
 fclean:			clean
 	rm -f $(NAME)

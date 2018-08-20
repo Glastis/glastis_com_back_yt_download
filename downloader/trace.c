@@ -59,11 +59,4 @@ void                        debug_init()
     signal(SIGINT, signal_handle);
 }
 
-#else
-
-void                        debug_init()
-{
-
-}
-
 #endif /* !TRACE_DEBUG */
