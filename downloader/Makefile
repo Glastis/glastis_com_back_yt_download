@@ -11,7 +11,7 @@ OBJ_NOTRACE=	    $(SRC_NOTRACE:.c=.o)
 
 NAME=			    a.out
 
-CFLAGS=		        -Wall -Wextra -Werror -ansi -pedantic
+CFLAGS=		        -Wall -Wextra -Werror -ansi -pedantic -std=c99
 
 LFLAGS=			    -lpthread -lcurl
 

@@ -6,6 +6,8 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "header/download.h"
 #include "header/utilities.h"
 
@@ -35,6 +37,7 @@ static t_workinfo           **init_workinfo(t_process *process, t_opt *opt)
         workinfo_tmp = safe_malloc(1, sizeof(t_workinfo));
         worker = safe_malloc(1, sizeof(t_worker));
         worker->process = process;
+        worker->retry = 0;
         worker->video = NULL;
         worker->job = (i < opt->thread_amount_download) ? DOWNLOADER : CONVERTER;
         worker->job_process = (i < opt->thread_amount_download) ? &download_job : &convert_job;
@@ -55,13 +58,18 @@ static t_video              *get_unprocessed_video(t_worker *worker, int wait)
     i = 0;
     if (wait)
     {
-        usleep(THREAD_CONVERTER_WAIT_DELAY);
+        if (worker->retry > THREAD_CONVERTER_MAX_RETRY)
+        {
+            return (NULL);
+        }
+        sleep(THREAD_CONVERTER_WAIT_DELAY);
+        ++worker->retry;
     }
     pthread_mutex_lock(&mutlist->process_mutex);
     while (i < worker->process->video_amount)
     {
-        printf("%s\n", (worker->job == DOWNLOADER)  ? "DOWN" : "conv");
-        if ((worker->job == DOWNLOADER && !worker->process->video[i]->downloaded) || (!worker->process->video[i]->converted))
+        if ((worker->job == DOWNLOADER && !worker->process->video[i]->downloaded) ||
+            (worker->job == CONVERTER && !worker->process->video[i]->converted))
         {
             if (worker->job == CONVERTER && !worker->process->video[i]->download_ended)
             {
@@ -87,10 +95,54 @@ static t_video              *get_unprocessed_video(t_worker *worker, int wait)
     return ((ended) ? NULL : get_unprocessed_video(worker, TRUE));
 }
 
+static unsigned int         download_job_construct_command_get_size(t_workinfo *workinfo)
+{
+    unsigned int            size;
+
+    size = sizeof(THREAD_DOWNLOAD_BINARY) - 1;
+    if (workinfo->opt->output_format_type == AUDIO)
+    {
+        size += sizeof(THREAD_DOWNLOAD_FLAG_AUDIO_ONLY - 1);
+        size += sizeof(THREAD_DOWNLOAD_SEPARATOR) - 1;
+    }
+    size += sizeof(THREAD_DOWNLOAD_URL) - 1;
+    size += sizeof(THREAD_DOWNLOAD_SEPARATOR);
+    size += safe_strlen(workinfo->worker->video->id);
+    printf("%d\n", size);
+    return (size);
+}
+
+static void                 download_job_construct_command(t_workinfo *workinfo, char *command)
+{
+    unsigned int            size;
+
+    size = 0;
+    memcpy(&command[size], THREAD_DOWNLOAD_BINARY, sizeof(THREAD_DOWNLOAD_BINARY) - 1 + size);
+    size += sizeof(THREAD_DOWNLOAD_BINARY) - 1;
+    memcpy(&command[size], THREAD_DOWNLOAD_SEPARATOR, sizeof(THREAD_DOWNLOAD_SEPARATOR) - 1 + size);
+    size += sizeof(THREAD_DOWNLOAD_SEPARATOR) - 1;
+    if (workinfo->opt->output_format_type == AUDIO)
+    {
+        memcpy(&command[size], THREAD_DOWNLOAD_FLAG_AUDIO_ONLY, sizeof(THREAD_DOWNLOAD_FLAG_AUDIO_ONLY) - 1 + size);
+        size += sizeof(THREAD_DOWNLOAD_FLAG_AUDIO_ONLY) - 1;
+        memcpy(&command[size], THREAD_DOWNLOAD_SEPARATOR, sizeof(THREAD_DOWNLOAD_SEPARATOR) - 1 + size);
+        size += sizeof(THREAD_DOWNLOAD_SEPARATOR) - 1;
+    }
+    memcpy(&command[size], THREAD_DOWNLOAD_URL, sizeof(THREAD_DOWNLOAD_URL) - 1 + size);
+    size += sizeof(THREAD_DOWNLOAD_URL) - 1;
+    memcpy(&command[size], workinfo->worker->video->id, safe_strlen(workinfo->worker->video->id) - 1 + size);
+    size += safe_strlen(workinfo->worker->video->id);
+    command[size] = '\0';
+}
+
 void                        download_job(t_workinfo *workinfo)
 {
-    printf("Downloading %s\n", workinfo->worker->video->id);
-    pthread_mutex_lock(&mutlist->process_mutex);
+    char                    *command;
+
+    command = safe_malloc(download_job_construct_command_get_size(workinfo), sizeof(char));
+    download_job_construct_command(workinfo, command);
+    puts(command);
+    system(command);
 }
 
 void                        convert_job(t_workinfo *workinfo)
@@ -123,7 +175,8 @@ void                        download_videos(t_process *process, t_opt *opt)
         pthread_create(&workinfo[i]->worker->id, NULL, &search_job, workinfo[i]);
         ++i;
     }
-    while (i < process->video_amount)
+    i = 0;
+    while (i < (opt->thread_amount_download + opt->thread_amount_convert))
     {
         pthread_join(workinfo[i]->worker->id, NULL);
         ++i;

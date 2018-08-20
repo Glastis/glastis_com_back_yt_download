@@ -5,11 +5,19 @@
 #ifndef DOWNLOADER_PROCESS_H
 #define DOWNLOADER_PROCESS_H
 
+enum                        e_format
+{
+    AUDIO,
+    VIDEO,
+    DEFAULT
+};
+
 struct                      s_opt
 {
     char                    *list_filepath;
     char                    *progress_filepath;
     char                    *output_format;
+    enum e_format           output_format_type;
     unsigned int            thread_amount_download;
     unsigned int            thread_amount_convert;
 };

@@ -9,8 +9,13 @@
 #include "process.h"
 #include "main.h"
 
-#define THREAD_CONVERTER_WAIT_DELAY                 500u /* Miliseconds to wait available videos to convert. */
-#define THREAD_CONVERTER_MAX_RETRY                  300
+#define THREAD_CONVERTER_WAIT_DELAY                 1 /* Seconds to wait available videos to convert. */
+#define THREAD_CONVERTER_MAX_RETRY                  500u
+
+#define THREAD_DOWNLOAD_BINARY                      "youtube-dl"
+#define THREAD_DOWNLOAD_URL                         "https://www.youtube.com/watch?v="
+#define THREAD_DOWNLOAD_FLAG_AUDIO_ONLY             "-x"
+#define THREAD_DOWNLOAD_SEPARATOR                   " "
 
 enum                        e_role
 {
@@ -28,6 +33,7 @@ struct                      s_worker
 {
     pthread_t               id;
     enum e_role             job;
+    unsigned int            retry;
     void                    (*job_process)(struct s_workinfo *);
     t_video                 *video;
     t_process               *process;

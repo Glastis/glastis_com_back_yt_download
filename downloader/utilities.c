@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "header/utilities.h"
-#include "header/get_list_info.h"
 
 void                        print_help()
 {
@@ -19,15 +18,15 @@ void                        str_init(t_str *str)
     str->len = 0;
 }
 
-void                        error(const char *error)
+inline __attribute__((always_inline)) void                  error(const char *error)
 {
     fprintf(stderr, "Error: %s\n", error);
     exit(-1);
 }
 
-unsigned int                str_greater_than(const char *str, unsigned int max)
+inline __attribute__((always_inline)) unsigned int          str_greater_than(const char *str, unsigned int max)
 {
-    unsigned int            i;
+    unsigned int                                            i;
 
     i = 0;
     if (!str)
@@ -41,7 +40,7 @@ unsigned int                str_greater_than(const char *str, unsigned int max)
     return (unsigned int) (str[i] != '\0');
 }
 
-unsigned int                safe_strlen(const char *str)
+inline __attribute__((always_inline)) unsigned int          safe_strlen(const char *str)
 {
     if (!str)
     {
@@ -50,9 +49,9 @@ unsigned int                safe_strlen(const char *str)
     return (unsigned int) (strlen(str));
 }
 
-void                        *safe_malloc(size_t len, size_t type)
+inline __attribute__((always_inline)) void                  *safe_malloc(size_t len, size_t type)
 {
-    void                    *ret;
+    void                                                    *ret;
 
     if (type > 0)
     {
@@ -65,9 +64,9 @@ void                        *safe_malloc(size_t len, size_t type)
     return (ret);
 }
 
-void                        *safe_realloc(void *ptr, size_t len, size_t type)
+inline __attribute__((always_inline)) void                  *safe_realloc(void *ptr, size_t len, size_t type)
 {
-    void                    *ret;
+    void                                                    *ret;
 
     if (type > 0)
     {
@@ -81,9 +80,9 @@ void                        *safe_realloc(void *ptr, size_t len, size_t type)
 
 }
 
-unsigned int                comp_str(const char *str1, const char *str2)
+inline __attribute__((always_inline)) unsigned int          comp_str(const char *str1, const char *str2)
 {
-    unsigned int            i;
+    unsigned int                                            i;
 
     i = 0;
     if (!str1 || !str2)

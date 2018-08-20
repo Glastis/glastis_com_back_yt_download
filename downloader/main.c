@@ -24,6 +24,7 @@ static void                 init_opt(t_opt *opt)
     opt->list_filepath = NULL;
     opt->progress_filepath = NULL;
     opt->output_format = NULL;
+    opt->output_format_type = DEFAULT;
     opt->thread_amount_download = THREAD_DEFAULT_DOWNLOAD;
     opt->thread_amount_convert = THREAD_DEFAULT_CONVERT;
 }
@@ -67,22 +68,26 @@ static void                 get_opt(t_opt *opt, char **av)
     }
 }
 
-static void                 check_opt_format(char *format)
+static enum e_format        check_opt_format(char *format)
 {
     unsigned int            i;
 
     i = 0;
     while (ACCEPTED_FORMATS_AUDIO[i] || ACCEPTED_FORMATS_VIDEO[i])
     {
-        if ((ACCEPTED_FORMATS_AUDIO[i] && !strcmp(ACCEPTED_FORMATS_AUDIO[i], format)) ||
-            (ACCEPTED_FORMATS_VIDEO[i] && !strcmp(ACCEPTED_FORMATS_VIDEO[i], format)))
+        if (ACCEPTED_FORMATS_AUDIO[i] && !strcmp(ACCEPTED_FORMATS_AUDIO[i], format))
         {
-            return;
+            return (AUDIO);
+        }
+        else if (ACCEPTED_FORMATS_VIDEO[i] && !strcmp(ACCEPTED_FORMATS_VIDEO[i], format))
+        {
+            return (VIDEO);
         }
         ++i;
     }
     fprintf(stderr, "%s: ", format);
     error(ERROR_ARGUMENT_BAD_FORMAT);
+    return (DEFAULT);
 }
 
 static void                 check_opt(t_opt *opt)
@@ -93,7 +98,7 @@ static void                 check_opt(t_opt *opt)
     }
     if (opt->output_format)
     {
-        check_opt_format(opt->output_format);
+        opt->output_format_type = check_opt_format(opt->output_format);
     }
 }
 
